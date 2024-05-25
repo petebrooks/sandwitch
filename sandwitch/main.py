@@ -12,6 +12,7 @@ from rich.table import Table
 import time
 
 app = typer.Typer()
+console = Console()
 
 
 def get_video_files(layer_path):
@@ -91,7 +92,7 @@ def composite_videos(
 ):
     start_time = time.time()
     console.print("[bold blue]Starting composite_videos command...[/bold blue]")
-    
+
     console.print("[bold blue]Configuring logging...[/bold blue]")
     if log_file:
         logging.basicConfig(
@@ -116,15 +117,15 @@ def composite_videos(
         ]
     )
 
-    console = Console()
-
     console.print("[bold blue]Determining video dimensions...[/bold blue]")
     if width is None or height is None:
         width, height = get_max_dimensions(layer_dirs)
         typer.echo(f"Defaulting to maximum dimensions: width={width}, height={height}")
 
     if dry_run:
-        console.print(f"[bold blue]Total setup time: {time.time() - start_time:.2f} seconds[/bold blue]")
+        console.print(
+            f"[bold blue]Total setup time: {time.time() - start_time:.2f} seconds[/bold blue]"
+        )
         num_combinations = 1
         detailed_info = []
 
@@ -182,12 +183,18 @@ def composite_videos(
     total_videos = 0
 
     processing_start_time = time.time()
-    
+
     console.print("[bold blue]Processing videos...[/bold blue]")
     for i, video_file_0 in enumerate(
-        tqdm(video_files_layer_0, desc="Processing videos", bar_format="{l_bar}{bar}| {n_fmt}/{total_fmt} [{elapsed}<{remaining}]")
+        tqdm(
+            video_files_layer_0,
+            desc="Processing videos",
+            bar_format="{l_bar}{bar}| {n_fmt}/{total_fmt} [{elapsed}<{remaining}]",
+        )
     ):
-        logging.debug(f"Processing base video file {i+1}/{len(video_files_layer_0)}: {video_file_0}")
+        logging.debug(
+            f"Processing base video file {i+1}/{len(video_files_layer_0)}: {video_file_0}"
+        )
         base_clip = VideoFileClip(video_file_0).without_audio().set_fps(fps)
         combinations = [[base_clip]]
 
@@ -201,7 +208,9 @@ def composite_videos(
                     new_combinations.append(combo + [new_clip])
             combinations = new_combinations
 
-        console.print(f"[bold blue]Processing {len(combinations)} combinations...[/bold blue]")
+        console.print(
+            f"[bold blue]Processing {len(combinations)} combinations...[/bold blue]"
+        )
         for j, combo in enumerate(combinations):
             combination_start_time = time.time()
             longest_duration = max(clip.duration for clip in combo)
@@ -214,14 +223,22 @@ def composite_videos(
                 output_dir, f"{file_name_prefix}_{total_videos:04d}.{output_format}"
             )
             logging.debug(f"Writing final composite video to: {output_file}")
-            console.print(f"[bold blue]Writing final composite video to: {output_file}[/bold blue]")
+            console.print(
+                f"[bold blue]Writing final composite video to: {output_file}[/bold blue]"
+            )
             final_clip.write_videofile(output_file, codec="libx264")
-            logging.debug(f"Time to process combination {j+1}/{len(combinations)}: {time.time() - combination_start_time:.2f} seconds")
+            logging.debug(
+                f"Time to process combination {j+1}/{len(combinations)}: {time.time() - combination_start_time:.2f} seconds"
+            )
             total_videos += 1
 
+    console.print(
+        f"[bold blue]Total processing time: {time.time() - processing_start_time:.2f} seconds[/bold blue]"
+    )
+    console.print(
+        f"[bold blue]Total execution time: {time.time() - start_time:.2f} seconds[/bold blue]"
+    )
 
-    console.print(f"[bold blue]Total processing time: {time.time() - processing_start_time:.2f} seconds[/bold blue]")
-    console.print(f"[bold blue]Total execution time: {time.time() - start_time:.2f} seconds[/bold blue]")
 
 if __name__ == "__main__":
     app()
