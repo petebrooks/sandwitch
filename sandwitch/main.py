@@ -21,14 +21,11 @@ def get_video_files(layer_path):
 
 
 def resize_and_crop(clip, width, height):
-    clip = (
-        clip.resize(height=height)
-        if clip.size[0] / clip.size[1] < width / height
-        else clip.resize(width=width)
-    )
-    return clip.crop(
-        width=width, height=height, x_center=clip.w / 2, y_center=clip.h / 2
-    )
+    if clip.size[0] / clip.size[1] < width / height:
+        clip = clip.resize(height=height)
+    else:
+        clip = clip.resize(width=width)
+    return clip.crop(width=width, height=height, x_center=clip.w / 2, y_center=clip.h / 2)
 
 
 def retime_to_match_longest(clips, target_duration, fps):
