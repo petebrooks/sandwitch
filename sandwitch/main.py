@@ -120,10 +120,12 @@ def composite_videos(
     )
 
     console.print("[bold blue]Determining video dimensions...[/bold blue]")
+    dimension_start_time = time.time()
     logging.debug("Determining video dimensions...")
     if width is None or height is None:
         width, height = get_max_dimensions(layer_dirs)
         typer.echo(f"Defaulting to maximum dimensions: width={width}, height={height}")
+    console.print(f"[bold blue]Time to determine dimensions: {time.time() - dimension_start_time:.2f} seconds[/bold blue]")
 
     if dry_run:
         console.print(
@@ -184,6 +186,7 @@ def composite_videos(
     os.makedirs(output_dir, exist_ok=True)
 
     video_files_layer_0 = get_video_files(layer_dirs[0])
+    console.print(f"[bold blue]Time to get video files from first layer: {time.time() - processing_start_time:.2f} seconds[/bold blue]")
     total_videos = 0
 
     processing_start_time = time.time()
@@ -200,11 +203,14 @@ def composite_videos(
         logging.debug(
             f"Processing base video file {i+1}/{len(video_files_layer_0)}: {video_file_0}"
         )
+        clip_start_time = time.time()
         base_clip = VideoFileClip(video_file_0).without_audio().set_fps(fps)
+        console.print(f"[bold blue]Time to load base clip: {time.time() - clip_start_time:.2f} seconds[/bold blue]")
         combinations = [[base_clip]]
 
         for layer in layer_dirs[1:]:
             logging.debug(f"Processing layer: {layer}")
+            layer_start_time = time.time()
             new_combinations = []
             for combo in combinations:
                 for video_file in get_video_files(layer):
@@ -212,6 +218,7 @@ def composite_videos(
                     new_clip = VideoFileClip(video_file).without_audio().set_fps(fps)
                     new_combinations.append(combo + [new_clip])
             combinations = new_combinations
+            console.print(f"[bold blue]Time to process layer: {time.time() - layer_start_time:.2f} seconds[/bold blue]")
 
         console.print(
             f"[bold blue]Processing {len(combinations)} combinations...[/bold blue]"
@@ -232,7 +239,9 @@ def composite_videos(
             console.print(
                 f"[bold blue]Writing final composite video to: {output_file}[/bold blue]"
             )
+            write_start_time = time.time()
             final_clip.write_videofile(output_file, codec="libx264")
+            console.print(f"[bold blue]Time to write video file: {time.time() - write_start_time:.2f} seconds[/bold blue]")
             logging.debug(
                 f"Time to process combination {j+1}/{len(combinations)}: {time.time() - combination_start_time:.2f} seconds"
             )
