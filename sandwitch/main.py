@@ -185,7 +185,9 @@ def composite_videos(
     logging.debug("Creating output directory...")
     os.makedirs(output_dir, exist_ok=True)
 
+    processing_start_time = time.time()
     video_files_layer_0 = get_video_files(layer_dirs[0])
+    console.print(f"[bold blue]Time to get video files from first layer: {time.time() - processing_start_time:.2f} seconds[/bold blue]")
     console.print(f"[bold blue]Time to get video files from first layer: {time.time() - processing_start_time:.2f} seconds[/bold blue]")
     total_videos = 0
 
