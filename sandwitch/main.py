@@ -75,6 +75,8 @@ def get_max_dimensions(layer_dirs):
                 max_width = max(max_width, clip.size[0])
                 max_height = max(max_height, clip.size[1])
                 clip.close()
+            except OSError as e:
+                logging.warning(f"Skipping corrupted or unsupported video file: {video_file}")
             except Exception as e:
                 logging.error(f"Error processing video file {video_file}: {e}")
     return max_width, max_height
@@ -126,6 +128,8 @@ def process_videos(
                 clip = VideoFileClip(video_file)
                 clips.append(clip)
                 longest_duration = max(longest_duration, clip.duration)
+            except OSError as e:
+                logging.warning(f"Skipping corrupted or unsupported video file: {video_file}")
             except Exception as e:
                 logging.error(f"Error loading video file {video_file}: {e}")
 
