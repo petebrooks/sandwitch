@@ -92,8 +92,10 @@ def composite_videos(
 ):
     start_time = time.time()
     console.print("[bold blue]Starting composite_videos command...[/bold blue]")
+    logging.debug("Starting composite_videos command...")
 
     console.print("[bold blue]Configuring logging...[/bold blue]")
+    logging.debug("Configuring logging...")
     if log_file:
         logging.basicConfig(
             filename=log_file,
@@ -118,6 +120,7 @@ def composite_videos(
     )
 
     console.print("[bold blue]Determining video dimensions...[/bold blue]")
+    logging.debug("Determining video dimensions...")
     if width is None or height is None:
         width, height = get_max_dimensions(layer_dirs)
         typer.echo(f"Defaulting to maximum dimensions: width={width}, height={height}")
@@ -177,6 +180,7 @@ def composite_videos(
         return
 
     console.print("[bold blue]Creating output directory...[/bold blue]")
+    logging.debug("Creating output directory...")
     os.makedirs(output_dir, exist_ok=True)
 
     video_files_layer_0 = get_video_files(layer_dirs[0])
@@ -185,6 +189,7 @@ def composite_videos(
     processing_start_time = time.time()
 
     console.print("[bold blue]Processing videos...[/bold blue]")
+    logging.debug("Processing videos...")
     for i, video_file_0 in enumerate(
         tqdm(
             video_files_layer_0,
@@ -211,6 +216,7 @@ def composite_videos(
         console.print(
             f"[bold blue]Processing {len(combinations)} combinations...[/bold blue]"
         )
+        logging.debug(f"Processing {len(combinations)} combinations...")
         for j, combo in enumerate(combinations):
             combination_start_time = time.time()
             longest_duration = max(clip.duration for clip in combo)
