@@ -146,8 +146,7 @@ def process_videos(
         if not dry_run:
             logging.debug(f"Writing final composite video to: {output_file}")
             try:
-                with open(output_file, "wb") as f:
-                    final_clip.write_videofile(f, codec="libx264", preset="fast")
+                final_clip.write_videofile(output_file, codec="libx264", preset="fast")
             except Exception as e:
                 logging.error(f"Error writing video file {output_file}: {e}")
         else:
