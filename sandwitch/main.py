@@ -1,14 +1,12 @@
 import os
 import typer
-from moviepy.editor import VideoFileClip, CompositeVideoClip
-from moviepy.video.fx.resize import resize as moviepy_resize
+from moviepy.editor import VideoFileClip, CompositeVideoClip, ImageClip
 from PIL import Image
 import numpy as np
 from tqdm import tqdm
 import logging
 from rich import print
 from rich.console import Console
-from rich.table import Table
 import time
 import cv2
 
@@ -24,12 +22,22 @@ def get_video_files(layer_path):
     ]
 
 
+def resize_with_opencv(image, new_width, new_height):
+    resized_image = cv2.resize(
+        image, (new_width, new_height), interpolation=cv2.INTER_LANCZOS4
+    )
+    return resized_image
+
+
 def resize_and_crop(clip, width, height):
     if clip.size[0] / clip.size[1] < width / height:
         clip = clip.resize(height=height)
     else:
         clip = clip.resize(width=width)
-    resized_clip = moviepy_resize(clip, newsize=(width, height), apply_to_mask=True)
+    # Use OpenCV for resizing
+    clip_frame = clip.get_frame(0)
+    resized_frame = resize_with_opencv(clip_frame, width, height)
+    resized_clip = ImageClip(resized_frame)
     return resized_clip.crop(
         width=width,
         height=height,
@@ -68,16 +76,18 @@ def get_max_dimensions(layer_dirs):
     return max_width, max_height
 
 
-def resize_with_opencv(image_path, new_width, new_height):
-    image = cv2.imread(image_path)
-    resized_image = cv2.resize(
-        image, (new_width, new_height), interpolation=cv2.INTER_LANCZOS4
-    )
-    return resized_image
-
-
 @app.command()
-def process_videos(layers_dir: str, output_dir: str, output_format: str = "mp4"):
+def process_videos(
+    layers_dir: str = typer.Argument(..., help="Directory containing video layers."),
+    output_dir: str = typer.Argument(..., help="Directory to save the output videos."),
+    output_format: str = typer.Option("mp4", help="Format of the output video."),
+    verbose: bool = typer.Option(False, help="Enable verbose output."),
+    dry_run: bool = typer.Option(
+        False, help="Perform a dry run without saving videos."
+    ),
+):
+    logging.basicConfig(level=logging.DEBUG if verbose else logging.INFO)
+
     start_time = time.time()
     layer_dirs = [
         os.path.join(layers_dir, d)
@@ -108,7 +118,14 @@ def process_videos(layers_dir: str, output_dir: str, output_format: str = "mp4")
             output_dir, f"{os.path.basename(layer)}_{total_videos:04d}.{output_format}"
         )
 
-        final_clip.write_videofile(output_file, codec="libx264")
+        logging.debug(f"Processed final composite video for: {output_file}")
+
+        if not dry_run:
+            logging.debug(f"Writing final composite video to: {output_file}")
+            final_clip.write_videofile(output_file, codec="libx264")
+        else:
+            logging.info(f"Dry run: Video for {output_file} processed but not saved.")
+
         total_videos += 1
 
     console.print(

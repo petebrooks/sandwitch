@@ -13,6 +13,7 @@ tqdm = "^4.66.4"
 pillow = "^10.3.0"
 numpy = "^1.26.4"
 rich = "^13.7.1"
+opencv-python = "^4.9.0.80"
 
 [tool.poetry.group.dev.dependencies]
 aider-chat = "^0.36.0"

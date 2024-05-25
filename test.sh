@@ -17,4 +17,4 @@ poetry --version
 ls ~/Downloads/y2party/vids/composites/composites
 ls ~/Downloads/y2party/vids/composites
 
-poetry run python sandwitch/main.py ~/Downloads/y2party/vids/composites ~/Downloads/y2party/vids/composites/composites --verbose "$@"
+poetry run python sandwitch/main.py --verbose ~/Downloads/y2party/vids/composites ~/Downloads/y2party/vids/composites/composites
