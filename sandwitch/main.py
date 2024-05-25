@@ -125,15 +125,17 @@ def composite_videos(
                     video_file.replace(home_dir, "~") for video_file in video_files
                 ]
                 terminal_width = console.size.width
-                max_layer_length = max(len(layer) for layer, _ in detailed_info)
+                home_dir = os.path.expanduser("~")
+                truncated_layer = layer.replace(home_dir, "~")
+                max_layer_length = max(len(truncated_layer) for truncated_layer, _ in detailed_info)
                 max_file_length = terminal_width - max_layer_length - 10  # Adjust for padding
 
                 formatted_files = [
-                    (file if len(file) <= max_file_length else file[:max_file_length] + "...")
+                    (file if len(file) <= max_file_length else "..." + file[-max_file_length:])
                     for file in truncated_files
                 ]
                 table.add_row(
-                    layer if len(layer) <= max_layer_length else layer[:max_layer_length] + "...",
+                    truncated_layer if len(truncated_layer) <= max_layer_length else "..." + truncated_layer[-max_layer_length:],
                     "\n".join(formatted_files)
                 )
 
