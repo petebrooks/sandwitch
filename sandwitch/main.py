@@ -1,6 +1,8 @@
 import os
 import typer
 from moviepy.editor import VideoFileClip, CompositeVideoClip
+from PIL import Image
+import numpy as np
 from tqdm import tqdm
 import logging
 from rich import print
