@@ -42,6 +42,12 @@ def retime_to_match_longest(clips, target_duration, fps):
     return retimed_clips
 
 
+def resizer(pic, newsize):
+    pilim = Image.fromarray(pic)
+    resized_pil = pilim.resize(newsize[::-1], Image.LANCZOS)
+    return np.array(resized_pil)
+
+
 def get_max_dimensions(layer_dirs):
     max_width, max_height = 0, 0
     for layer in layer_dirs:
