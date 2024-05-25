@@ -2,10 +2,8 @@ import os
 import typer
 from moviepy.editor import VideoFileClip, CompositeVideoClip, ImageClip
 from PIL import Image
-import numpy as np
 from tqdm import tqdm
 import logging
-from rich import print
 from rich.console import Console
 import time
 import cv2
@@ -116,9 +114,9 @@ def process_videos(
 
     batch_size = 5
     for i in range(0, len(layer_dirs), batch_size):
-        batch_layers = layer_dirs[i:i + batch_size]
+        batch_layers = layer_dirs[i : i + batch_size]
         for layer in tqdm(batch_layers, desc="Processing layers"):
-        video_files = get_video_files(layer)
+            video_files = get_video_files(layer)
         longest_duration = 0
         fps = 30
 
@@ -148,7 +146,7 @@ def process_videos(
         if not dry_run:
             logging.debug(f"Writing final composite video to: {output_file}")
             try:
-                with open(output_file, 'wb') as f:
+                with open(output_file, "wb") as f:
                     final_clip.write_videofile(f, codec="libx264", preset="fast")
             except Exception as e:
                 logging.error(f"Error writing video file {output_file}: {e}")
