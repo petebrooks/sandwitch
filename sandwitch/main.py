@@ -27,7 +27,18 @@ def resize_and_crop(clip, width, height):
     else:
         clip = clip.resize(width=width)
     resized_clip = moviepy_resize(clip, newsize=(width, height), apply_to_mask=True)
-    return resized_clip.crop(width=width, height=height, x_center=resized_clip.w / 2, y_center=resized_clip.h / 2)
+    return resized_clip.crop(
+        width=width,
+        height=height,
+        x_center=resized_clip.w / 2,
+        y_center=resized_clip.h / 2,
+    )
+
+
+def resizer(pic, newsize):
+    pilim = Image.fromarray(pic)
+    resized_pil = pilim.resize(newsize[::-1], Image.LANCZOS)
+    return np.array(resized_pil)
 
 
 def retime_to_match_longest(clips, target_duration, fps):
@@ -41,12 +52,6 @@ def retime_to_match_longest(clips, target_duration, fps):
         final_clip = final_clip.set_fps(fps)
         retimed_clips.append(final_clip)
     return retimed_clips
-
-
-def resizer(pic, newsize):
-    pilim = Image.fromarray(pic)
-    resized_pil = pilim.resize(newsize[::-1], Image.LANCZOS)
-    return np.array(resized_pil)
 
 
 def get_max_dimensions(layer_dirs):
@@ -134,20 +139,32 @@ def composite_videos(
                 terminal_width = console.size.width
                 home_dir = os.path.expanduser("~")
                 truncated_layer = layer.replace(home_dir, "~")
-                max_layer_length = max(len(truncated_layer) for truncated_layer, _ in detailed_info)
-                max_file_length = terminal_width - max_layer_length - 10  # Adjust for padding
+                max_layer_length = max(
+                    len(truncated_layer) for truncated_layer, _ in detailed_info
+                )
+                max_file_length = (
+                    terminal_width - max_layer_length - 10
+                )  # Adjust for padding
 
                 formatted_files = [
-                    (file if len(file) <= max_file_length else "..." + file[-max_file_length:])
+                    (
+                        file
+                        if len(file) <= max_file_length
+                        else "..." + file[-max_file_length:]
+                    )
                     for file in truncated_files
                 ]
                 table.add_row(
-                    truncated_layer if len(truncated_layer) <= max_layer_length else "..." + truncated_layer[-max_layer_length:],
-                    "\n".join(formatted_files)
+                    truncated_layer
+                    if len(truncated_layer) <= max_layer_length
+                    else "..." + truncated_layer[-max_layer_length:],
+                    "\n".join(formatted_files),
                 )
 
             console.print(table)
-        console.print(f"[bold green]Number of output videos that would be created: {num_combinations}[/bold green]")
+        console.print(
+            f"[bold green]Number of output videos that would be created: {num_combinations}[/bold green]"
+        )
         return
 
     os.makedirs(output_dir, exist_ok=True)
