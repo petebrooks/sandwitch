@@ -52,7 +52,7 @@ def resize_and_crop(clip, width, height):
 
 def resizer(pic, newsize):
     pilim = Image.fromarray(pic)
-    resized_pil = pilim.resize(newsize[::-1], Image.LANCZOS)
+    resized_pil = pilim.resize(newsize[::-1], Image.BICUBIC)
     return np.array(resized_pil)
 
 
@@ -93,7 +93,7 @@ def process_videos(
         False, help="Perform a dry run without saving videos."
     ),
 ):
-    logging.basicConfig(level=logging.DEBUG if verbose else logging.INFO)
+    logging.basicConfig(level=logging.INFO if verbose else logging.WARNING)
 
     start_time = time.time()
 
@@ -115,7 +115,10 @@ def process_videos(
     processing_start_time = time.time()
     total_videos = 0
 
-    for layer in tqdm(layer_dirs, desc="Processing layers"):
+    batch_size = 5
+    for i in range(0, len(layer_dirs), batch_size):
+        batch_layers = layer_dirs[i:i + batch_size]
+        for layer in tqdm(batch_layers, desc="Processing layers"):
         video_files = get_video_files(layer)
         longest_duration = 0
         fps = 30
@@ -146,7 +149,8 @@ def process_videos(
         if not dry_run:
             logging.debug(f"Writing final composite video to: {output_file}")
             try:
-                final_clip.write_videofile(output_file, codec="libx264")
+                with open(output_file, 'wb') as f:
+                    final_clip.write_videofile(f, codec="libx264")
             except Exception as e:
                 logging.error(f"Error writing video file {output_file}: {e}")
         else:
