@@ -1,7 +1,7 @@
 import os
 import typer
 from moviepy.editor import VideoFileClip, CompositeVideoClip
-from PIL import Image, ImageResampling
+from PIL import Image
 import numpy as np
 from tqdm import tqdm
 import logging
@@ -43,7 +43,7 @@ def retime_to_match_longest(clips, target_duration, fps):
 
 def resizer(pic, newsize):
     pilim = Image.fromarray(pic)
-    resized_pil = pilim.resize(newsize[::-1], ImageResampling.LANCZOS)
+    resized_pil = pilim.resize(newsize[::-1], Image.Resampling.LANCZOS)
     return np.array(resized_pil)
 
 
