@@ -52,8 +52,7 @@ def resize_and_crop(clip, width, height):
 
 def resizer(pic, newsize):
     pilim = Image.fromarray(pic)
-    resized_pil = pilim.resize(newsize[::-1], Image.BICUBIC)
-    return np.array(resized_pil)
+    return cv2.resize(pic, newsize[::-1], interpolation=cv2.INTER_LANCZOS4)
 
 
 def retime_to_match_longest(clips, target_duration, fps):
@@ -150,7 +149,7 @@ def process_videos(
             logging.debug(f"Writing final composite video to: {output_file}")
             try:
                 with open(output_file, 'wb') as f:
-                    final_clip.write_videofile(f, codec="libx264")
+                    final_clip.write_videofile(f, codec="libx264", preset="fast")
             except Exception as e:
                 logging.error(f"Error writing video file {output_file}: {e}")
         else:
