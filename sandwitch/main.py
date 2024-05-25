@@ -1,6 +1,7 @@
 import os
 import typer
 from moviepy.editor import VideoFileClip, CompositeVideoClip
+from moviepy.video.fx.resize import resize as moviepy_resize
 from PIL import Image
 import numpy as np
 from tqdm import tqdm
@@ -25,7 +26,8 @@ def resize_and_crop(clip, width, height):
         clip = clip.resize(height=height)
     else:
         clip = clip.resize(width=width)
-    return clip.crop(width=width, height=height, x_center=clip.w / 2, y_center=clip.h / 2)
+    resized_clip = moviepy_resize(clip, newsize=(width, height), apply_to_mask=True)
+    return resized_clip.crop(width=width, height=height, x_center=resized_clip.w / 2, y_center=resized_clip.h / 2)
 
 
 def retime_to_match_longest(clips, target_duration, fps):
@@ -43,7 +45,7 @@ def retime_to_match_longest(clips, target_duration, fps):
 
 def resizer(pic, newsize):
     pilim = Image.fromarray(pic)
-    resized_pil = pilim.resize(newsize[::-1], Image.Resampling.LANCZOS)
+    resized_pil = pilim.resize(newsize[::-1], Image.LANCZOS)
     return np.array(resized_pil)
 
 
