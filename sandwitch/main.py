@@ -9,6 +9,7 @@ import logging
 from rich import print
 from rich.console import Console
 from rich.table import Table
+import time
 
 app = typer.Typer()
 
@@ -88,6 +89,8 @@ def composite_videos(
         False, help="Enable verbose mode for more detailed output"
     ),
 ):
+    start_time = time.time()
+    
     if log_file:
         logging.basicConfig(
             filename=log_file,
@@ -117,6 +120,7 @@ def composite_videos(
         typer.echo(f"Defaulting to maximum dimensions: width={width}, height={height}")
 
     if dry_run:
+        logging.debug(f"Total setup time: {time.time() - start_time:.2f} seconds")
         num_combinations = 1
         detailed_info = []
 
@@ -172,6 +176,8 @@ def composite_videos(
     video_files_layer_0 = get_video_files(layer_dirs[0])
     total_videos = 0
 
+    processing_start_time = time.time()
+    
     for i, video_file_0 in enumerate(
         tqdm(video_files_layer_0, desc="Processing videos", bar_format="{l_bar}{bar}| {n_fmt}/{total_fmt} [{elapsed}<{remaining}]")
     ):
@@ -190,6 +196,7 @@ def composite_videos(
             combinations = new_combinations
 
         for j, combo in enumerate(combinations):
+            combination_start_time = time.time()
             longest_duration = max(clip.duration for clip in combo)
             resized_clips = [resize_and_crop(clip, width, height) for clip in combo]
             retimed_clips = retime_to_match_longest(
@@ -201,8 +208,12 @@ def composite_videos(
             )
             logging.debug(f"Writing final composite video to: {output_file}")
             final_clip.write_videofile(output_file, codec="libx264")
+            logging.debug(f"Time to process combination {j+1}/{len(combinations)}: {time.time() - combination_start_time:.2f} seconds")
             total_videos += 1
 
+
+    logging.debug(f"Total processing time: {time.time() - processing_start_time:.2f} seconds")
+    logging.debug(f"Total execution time: {time.time() - start_time:.2f} seconds")
 
 if __name__ == "__main__":
     app()
