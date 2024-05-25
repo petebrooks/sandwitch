@@ -173,15 +173,18 @@ def composite_videos(
     total_videos = 0
 
     for i, video_file_0 in enumerate(
-        tqdm(video_files_layer_0, desc="Processing videos")
+        tqdm(video_files_layer_0, desc="Processing videos", bar_format="{l_bar}{bar}| {n_fmt}/{total_fmt} [{elapsed}<{remaining}]")
     ):
+        logging.debug(f"Processing base video file {i+1}/{len(video_files_layer_0)}: {video_file_0}")
         base_clip = VideoFileClip(video_file_0).without_audio().set_fps(fps)
         combinations = [[base_clip]]
 
         for layer in layer_dirs[1:]:
+            logging.debug(f"Processing layer: {layer}")
             new_combinations = []
             for combo in combinations:
                 for video_file in get_video_files(layer):
+                    logging.debug(f"Adding video file to combination: {video_file}")
                     new_clip = VideoFileClip(video_file).without_audio().set_fps(fps)
                     new_combinations.append(combo + [new_clip])
             combinations = new_combinations
@@ -196,6 +199,7 @@ def composite_videos(
             output_file = os.path.join(
                 output_dir, f"{file_name_prefix}_{total_videos:04d}.{output_format}"
             )
+            logging.debug(f"Writing final composite video to: {output_file}")
             final_clip.write_videofile(output_file, codec="libx264")
             total_videos += 1
 
