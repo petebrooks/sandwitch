@@ -120,7 +120,16 @@ def composite_videos(
             table.add_column("Video Files", style="magenta")
 
             for layer, video_files in detailed_info:
-                table.add_row(layer, "\n".join(video_files))
+                home_dir = os.path.expanduser("~")
+                truncated_files = [
+                    video_file.replace(home_dir, "~") for video_file in video_files
+                ]
+                max_length = 50
+                formatted_files = [
+                    (file if len(file) <= max_length else file[:max_length] + "...") 
+                    for file in truncated_files
+                ]
+                table.add_row(layer, "\n".join(formatted_files))
 
             console.print(table)
         console.print(f"[bold green]Number of output videos that would be created: {num_combinations}[/bold green]")
