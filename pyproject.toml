@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "sandwitch"
+version = "0.1.0"
+description = ""
+authors = ["petelouise <programmetress@petelouise.beauty>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = ">=3.12,<3.13"
+typer = "^0.12.3"
+moviepy = "^1.0.3"
+tqdm = "^4.66.4"
+
+[tool.poetry.group.dev.dependencies]
+aider-chat = "^0.36.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
