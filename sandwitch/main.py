@@ -206,8 +206,9 @@ def composite_videos(
             f"Processing base video file {i+1}/{len(video_files_layer_0)}: {video_file_0}"
         )
         clip_start_time = time.time()
+        clip_load_start_time = time.time()
         base_clip = VideoFileClip(video_file_0).without_audio().set_fps(fps)
-        console.print(f"[bold blue]Time to load base clip: {time.time() - clip_start_time:.2f} seconds[/bold blue]")
+        console.print(f"[bold blue]Time to load base clip: {time.time() - clip_load_start_time:.2f} seconds[/bold blue]")
         combinations = [[base_clip]]
 
         for layer in layer_dirs[1:]:
@@ -217,7 +218,9 @@ def composite_videos(
             for combo in combinations:
                 for video_file in get_video_files(layer):
                     logging.debug(f"Adding video file to combination: {video_file}")
+                    clip_load_start_time = time.time()
                     new_clip = VideoFileClip(video_file).without_audio().set_fps(fps)
+                    console.print(f"[bold blue]Time to load new clip: {time.time() - clip_load_start_time:.2f} seconds[/bold blue]")
                     new_combinations.append(combo + [new_clip])
             combinations = new_combinations
             console.print(f"[bold blue]Time to process layer: {time.time() - layer_start_time:.2f} seconds[/bold blue]")
@@ -229,10 +232,12 @@ def composite_videos(
         for j, combo in enumerate(combinations):
             combination_start_time = time.time()
             longest_duration = max(clip.duration for clip in combo)
+            resize_start_time = time.time()
             resized_clips = [resize_and_crop(clip, width, height) for clip in combo]
-            retimed_clips = retime_to_match_longest(
-                resized_clips, longest_duration, fps
-            )
+            console.print(f"[bold blue]Time to resize clips: {time.time() - resize_start_time:.2f} seconds[/bold blue]")
+            retime_start_time = time.time()
+            retimed_clips = retime_to_match_longest(resized_clips, longest_duration, fps)
+            console.print(f"[bold blue]Time to retime clips: {time.time() - retime_start_time:.2f} seconds[/bold blue]")
             final_clip = CompositeVideoClip(retimed_clips, size=(width, height))
             output_file = os.path.join(
                 output_dir, f"{file_name_prefix}_{total_videos:04d}.{output_format}"
@@ -242,7 +247,9 @@ def composite_videos(
                 f"[bold blue]Writing final composite video to: {output_file}[/bold blue]"
             )
             write_start_time = time.time()
+            write_start_time = time.time()
             final_clip.write_videofile(output_file, codec="libx264")
+            console.print(f"[bold blue]Time to write video file: {time.time() - write_start_time:.2f} seconds[/bold blue]")
             console.print(f"[bold blue]Time to write video file: {time.time() - write_start_time:.2f} seconds[/bold blue]")
             logging.debug(
                 f"Time to process combination {j+1}/{len(combinations)}: {time.time() - combination_start_time:.2f} seconds"
