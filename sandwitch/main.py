@@ -15,11 +15,15 @@ console = Console()
 
 
 def get_video_files(layer_path):
-    return [
-        os.path.join(layer_path, f)
-        for f in os.listdir(layer_path)
-        if f.endswith((".mp4", ".mov", ".avi"))
-    ]
+    try:
+        return [
+            os.path.join(layer_path, f)
+            for f in os.listdir(layer_path)
+            if f.endswith((".mp4", ".mov", ".avi"))
+        ]
+    except FileNotFoundError as e:
+        logging.error(f"Error accessing files in {layer_path}: {e}")
+        return []
 
 
 def resize_with_opencv(image, new_width, new_height):
@@ -69,10 +73,13 @@ def get_max_dimensions(layer_dirs):
     max_width, max_height = 0, 0
     for layer in layer_dirs:
         for video_file in get_video_files(layer):
-            clip = VideoFileClip(video_file)
-            max_width = max(max_width, clip.size[0])
-            max_height = max(max_height, clip.size[1])
-            clip.close()
+            try:
+                clip = VideoFileClip(video_file)
+                max_width = max(max_width, clip.size[0])
+                max_height = max(max_height, clip.size[1])
+                clip.close()
+            except Exception as e:
+                logging.error(f"Error processing video file {video_file}: {e}")
     return max_width, max_height
 
 
@@ -89,6 +96,15 @@ def process_videos(
     logging.basicConfig(level=logging.DEBUG if verbose else logging.INFO)
 
     start_time = time.time()
+
+    if not os.path.isdir(layers_dir):
+        logging.error(f"Invalid layers directory: {layers_dir}")
+        return
+
+    if not os.path.isdir(output_dir):
+        logging.error(f"Invalid output directory: {output_dir}")
+        return
+
     layer_dirs = [
         os.path.join(layers_dir, d)
         for d in os.listdir(layers_dir)
@@ -99,16 +115,23 @@ def process_videos(
     processing_start_time = time.time()
     total_videos = 0
 
-    for layer in layer_dirs:
+    for layer in tqdm(layer_dirs, desc="Processing layers"):
         video_files = get_video_files(layer)
         longest_duration = 0
         fps = 30
 
         clips = []
         for video_file in video_files:
-            clip = VideoFileClip(video_file)
-            clips.append(clip)
-            longest_duration = max(longest_duration, clip.duration)
+            try:
+                clip = VideoFileClip(video_file)
+                clips.append(clip)
+                longest_duration = max(longest_duration, clip.duration)
+            except Exception as e:
+                logging.error(f"Error loading video file {video_file}: {e}")
+
+        if not clips:
+            logging.info(f"No valid video files found in layer {layer}")
+            continue
 
         resized_clips = [resize_and_crop(clip, max_width, max_height) for clip in clips]
         retimed_clips = retime_to_match_longest(resized_clips, longest_duration, fps)
@@ -122,7 +145,10 @@ def process_videos(
 
         if not dry_run:
             logging.debug(f"Writing final composite video to: {output_file}")
-            final_clip.write_videofile(output_file, codec="libx264")
+            try:
+                final_clip.write_videofile(output_file, codec="libx264")
+            except Exception as e:
+                logging.error(f"Error writing video file {output_file}: {e}")
         else:
             logging.info(f"Dry run: Video for {output_file} processed but not saved.")
 
