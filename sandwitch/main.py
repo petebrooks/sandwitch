@@ -3,6 +3,9 @@ import typer
 from moviepy.editor import VideoFileClip, CompositeVideoClip
 from tqdm import tqdm
 import logging
+from rich import print
+from rich.console import Console
+from rich.table import Table
 
 app = typer.Typer()
 
@@ -95,15 +98,32 @@ def composite_videos(
         ]
     )
 
+    console = Console()
+
     if width is None or height is None:
         width, height = get_max_dimensions(layer_dirs)
         typer.echo(f"Defaulting to maximum dimensions: width={width}, height={height}")
 
     if dry_run:
         num_combinations = 1
+        detailed_info = []
+
         for layer in layer_dirs:
-            num_combinations *= len(get_video_files(layer))
-        typer.echo(f"Number of output videos that would be created: {num_combinations}")
+            video_files = get_video_files(layer)
+            num_combinations *= len(video_files)
+            if verbose:
+                detailed_info.append((layer, video_files))
+
+        if verbose:
+            table = Table(title="Dry Run Details")
+            table.add_column("Layer", style="cyan")
+            table.add_column("Video Files", style="magenta")
+
+            for layer, video_files in detailed_info:
+                table.add_row(layer, "\n".join(video_files))
+
+            console.print(table)
+        console.print(f"[bold green]Number of output videos that would be created: {num_combinations}[/bold green]")
         return
 
     if not os.path.exists(output_dir):
