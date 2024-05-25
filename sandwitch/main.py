@@ -151,8 +151,7 @@ def composite_videos(
         console.print(f"[bold green]Number of output videos that would be created: {num_combinations}[/bold green]")
         return
 
-    if not os.path.exists(output_dir):
-        os.makedirs(output_dir)
+    os.makedirs(output_dir, exist_ok=True)
 
     video_files_layer_0 = get_video_files(layer_dirs[0])
     total_videos = 0
