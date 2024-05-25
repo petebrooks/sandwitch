@@ -249,9 +249,11 @@ def composite_videos(
             write_start_time = time.time()
             write_start_time = time.time()
             console.print(f"[bold blue]Starting to write video file: {output_file}[/bold blue]")
+            write_video_start_time = time.time()
             final_clip.write_videofile(output_file, codec="libx264")
+            console.print(f"[bold blue]Time to execute write_videofile: {time.time() - write_video_start_time:.2f} seconds[/bold blue]")
             console.print(f"[bold blue]Finished writing video file: {output_file}[/bold blue]")
-            console.print(f"[bold blue]Time to write video file: {time.time() - write_start_time:.2f} seconds[/bold blue]")
+            console.print(f"[bold blue]Total time to write video file: {time.time() - write_start_time:.2f} seconds[/bold blue]")
             console.print(f"[bold blue]Time to write video file: {time.time() - write_start_time:.2f} seconds[/bold blue]")
             logging.debug(
                 f"Time to process combination {j+1}/{len(combinations)}: {time.time() - combination_start_time:.2f} seconds"
