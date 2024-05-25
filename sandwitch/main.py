@@ -41,7 +41,7 @@ def resize_and_crop(clip, width, height):
     # Use OpenCV for resizing
     clip_frame = clip.get_frame(0)
     resized_frame = resize_with_opencv(clip_frame, width, height)
-    resized_clip = ImageClip(resized_frame)
+    resized_clip = ImageClip(resized_frame, duration=clip.duration)
     return resized_clip.crop(
         width=width,
         height=height,
@@ -61,7 +61,7 @@ def retime_to_match_longest(clips, target_duration, fps):
     for clip in clips:
         duration = clip.duration
         looped_clips = [clip]
-        while sum(c.duration for c in looped_clips) < target_duration:
+        while sum(c.duration for c in looped_clips if c.duration) < target_duration:
             looped_clips.append(clip)
         final_clip = CompositeVideoClip(looped_clips).set_duration(target_duration)
         final_clip = final_clip.set_fps(fps)
