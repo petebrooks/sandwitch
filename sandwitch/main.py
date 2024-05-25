@@ -116,20 +116,26 @@ def composite_videos(
 
         if verbose:
             table = Table(title="Dry Run Details")
-            table.add_column("Layer", style="cyan")
-            table.add_column("Video Files", style="magenta")
+            table.add_column("Layer", style="cyan", no_wrap=True)
+            table.add_column("Video Files", style="magenta", no_wrap=True)
 
             for layer, video_files in detailed_info:
                 home_dir = os.path.expanduser("~")
                 truncated_files = [
                     video_file.replace(home_dir, "~") for video_file in video_files
                 ]
-                max_length = 50
+                terminal_width = console.size.width
+                max_layer_length = max(len(layer) for layer, _ in detailed_info)
+                max_file_length = terminal_width - max_layer_length - 10  # Adjust for padding
+
                 formatted_files = [
-                    (file if len(file) <= max_length else file[:max_length] + "...") 
+                    (file if len(file) <= max_file_length else file[:max_file_length] + "...")
                     for file in truncated_files
                 ]
-                table.add_row(layer, "\n".join(formatted_files))
+                table.add_row(
+                    layer if len(layer) <= max_layer_length else layer[:max_layer_length] + "...",
+                    "\n".join(formatted_files)
+                )
 
             console.print(table)
         console.print(f"[bold green]Number of output videos that would be created: {num_combinations}[/bold green]")
