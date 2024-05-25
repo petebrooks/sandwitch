@@ -248,7 +248,9 @@ def composite_videos(
             )
             write_start_time = time.time()
             write_start_time = time.time()
+            console.print(f"[bold blue]Starting to write video file: {output_file}[/bold blue]")
             final_clip.write_videofile(output_file, codec="libx264")
+            console.print(f"[bold blue]Finished writing video file: {output_file}[/bold blue]")
             console.print(f"[bold blue]Time to write video file: {time.time() - write_start_time:.2f} seconds[/bold blue]")
             console.print(f"[bold blue]Time to write video file: {time.time() - write_start_time:.2f} seconds[/bold blue]")
             logging.debug(
